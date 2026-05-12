@@ -12,6 +12,8 @@ from docx.shared import Pt
 class ReportGenerator:
     """Generate board-level Word reports from parsed ALCO data."""
 
+    MAX_ACTION_LENGTH = 220
+
     def __init__(self, parsed_data: dict[str, Any], output_dir: str | Path = "."):
         self.data = parsed_data
         self.output_dir = Path(output_dir)
@@ -188,7 +190,7 @@ class ReportGenerator:
     @staticmethod
     def _normalize_action(text: str) -> str:
         cleaned = " ".join(text.split())
-        return cleaned[:220]
+        return cleaned[: ReportGenerator.MAX_ACTION_LENGTH]
 
     @staticmethod
     def _is_actionable_point(text: str) -> bool:

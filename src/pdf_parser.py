@@ -25,6 +25,10 @@ class SectionData:
 class PDFParser:
     """Parse ALCO PDF reports into structured section-level data."""
 
+    UNKNOWN_REPORT_DATE = "Unknown Date"
+    UNKNOWN_REPORT_PERIOD = "UnknownPeriod"
+    TABULAR_TOKEN_RATIO_THRESHOLD = 0.45
+
     SECTION_KEYWORDS = {
         "interest_rate_risk": [
             "interest rate risk",
@@ -204,7 +208,7 @@ class PDFParser:
         report_date = self._infer_reporting_date("\n".join(p["text"] for p in pages[:15]))
 
         dt = self._coerce_date(report_date)
-        month_year = dt.strftime("%B%Y") if dt else datetime.now().strftime("%B%Y")
+        month_year = dt.strftime("%B%Y") if dt else self.UNKNOWN_REPORT_PERIOD
 
         return {
             "bank_name": bank_name,
@@ -305,7 +309,7 @@ class PDFParser:
                 dt = self._coerce_date(value)
                 if dt:
                     return dt.strftime("%B %d, %Y")
-        return datetime.now().strftime("%B %d, %Y")
+        return self.UNKNOWN_REPORT_DATE
 
     @staticmethod
     def _coerce_date(value: str | None) -> datetime | None:
@@ -383,7 +387,7 @@ class PDFParser:
             for token in tokens
             if len(token) <= 3 or re.fullmatch(r"[\d,().%+\-/$]+", token)
         )
-        return short_or_numeric / len(tokens) > 0.45
+        return short_or_numeric / len(tokens) > PDFParser.TABULAR_TOKEN_RATIO_THRESHOLD
 
     @staticmethod
     def _bank_code(bank_name: str) -> str:
