@@ -13,7 +13,7 @@ class ReportGenerator:
     """Generate board-level Word reports from parsed ALCO data."""
 
     MAX_ACTION_LENGTH = 220
-    REPORT_PERIOD_LABEL = "For the Period Ended"
+    REPORT_PERIOD_LABEL = "For the Period Ending"
     MAX_ANALYSIS_METRIC_ROWS = 8
     MAX_BOARD_METRIC_ROWS = 6
     MAX_TABLE_COLUMNS = 5
@@ -201,7 +201,13 @@ class ReportGenerator:
     @staticmethod
     def _normalize_action(text: str) -> str:
         cleaned = " ".join(text.split())
-        return cleaned[: ReportGenerator.MAX_ACTION_LENGTH]
+        if len(cleaned) <= ReportGenerator.MAX_ACTION_LENGTH:
+            return cleaned
+
+        truncated = cleaned[: ReportGenerator.MAX_ACTION_LENGTH]
+        if " " in truncated:
+            truncated = truncated.rsplit(" ", 1)[0]
+        return truncated
 
     @staticmethod
     def _is_actionable_point(text: str) -> bool:
