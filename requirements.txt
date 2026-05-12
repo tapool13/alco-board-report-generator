@@ -1,0 +1,13 @@
+# PDF Processing
+PyPDF2==3.0.1
+pdfplumber==0.10.3
+
+# Word Document Generation
+python-docx==0.8.11
+
+# Data Processing
+pandas==2.0.3
+numpy==1.24.3
+
+# Utilities
+python-dotenv==1.0.0
