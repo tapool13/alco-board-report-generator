@@ -18,6 +18,7 @@ class ReportGenerator:
     MAX_BOARD_METRIC_ROWS = 6
     MAX_TABLE_COLUMNS = 5
     MAX_TABLE_ROWS = 6
+    MAX_SECTION_PAGE_REFERENCES = 8
 
     def __init__(self, parsed_data: dict[str, Any], output_dir: str | Path = "."):
         self.data = parsed_data
@@ -133,13 +134,15 @@ class ReportGenerator:
         parts: list[str] = []
         for key in section_keys:
             section = self.data.get("sections", {}).get(key, {})
-            title = section.get("title")
+            title = section.get("title", key.replace("_", " ").title())
             points = section.get("key_points", [])
             pages = section.get("pages", [])
             if points:
                 parts.append(f"{title}: {points[0]}")
             elif pages:
-                parts.append(f"{title}: information captured from pages {', '.join(map(str, pages[:8]))}.")
+                parts.append(
+                    f"{title}: information captured from pages {', '.join(map(str, pages[: self.MAX_SECTION_PAGE_REFERENCES]))}."
+                )
 
         if not parts:
             return "No directly extractable content was identified for this section in the provided PDF."

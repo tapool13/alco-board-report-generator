@@ -31,6 +31,12 @@ class PDFParser:
     MAX_BANK_NAME_LENGTH = 60
     MIN_HIGHLIGHT_LENGTH = 35
     MIN_KEY_POINT_LENGTH = 40
+    PRIMARY_BANK_LINE_SCAN_LIMIT = 6
+    FALLBACK_BANK_LINE_SCAN_LIMIT = 4
+    MAX_METRIC_NAME_LENGTH = 80
+    MAX_METRIC_VALUES_PER_LINE = 3
+    MAX_SINGLE_WORD_BANK_CODE_LENGTH = 4
+    MAX_BANK_CODE_WORDS = 4
 
     SECTION_KEYWORDS = {
         "interest_rate_risk": [
@@ -288,11 +294,11 @@ class PDFParser:
         )
 
     def _infer_bank_name(self, first_page_lines: list[str]) -> str:
-        for line in first_page_lines[:6]:
+        for line in first_page_lines[: self.PRIMARY_BANK_LINE_SCAN_LIMIT]:
             lowered = line.lower()
             if "bank" in lowered and "alco" not in lowered and len(line) <= self.MAX_BANK_NAME_LENGTH:
                 return line.title()
-        for line in first_page_lines[:4]:
+        for line in first_page_lines[: self.FALLBACK_BANK_LINE_SCAN_LIMIT]:
             if line and line.lower() != "alco":
                 return line.title()
         return "Client Bank"
@@ -356,8 +362,8 @@ class PDFParser:
             if not percent_matches and not amount_matches:
                 continue
 
-            metric_name = re.sub(r"\s+", " ", line[:80]).strip(" :.-")
-            metric_value = ", ".join((percent_matches + amount_matches)[:3])
+            metric_name = re.sub(r"\s+", " ", line[: self.MAX_METRIC_NAME_LENGTH]).strip(" :.-")
+            metric_value = ", ".join((percent_matches + amount_matches)[: self.MAX_METRIC_VALUES_PER_LINE])
             if metric_name and metric_value:
                 metrics.append({"metric": metric_name, "value": metric_value})
 
@@ -402,5 +408,5 @@ class PDFParser:
         if not words:
             return "BANK"
         if len(words) == 1:
-            return words[0][:4].upper()
-        return "".join(word[0] for word in words[:4]).upper()
+            return words[0][: PDFParser.MAX_SINGLE_WORD_BANK_CODE_LENGTH].upper()
+        return "".join(word[0] for word in words[: PDFParser.MAX_BANK_CODE_WORDS]).upper()
