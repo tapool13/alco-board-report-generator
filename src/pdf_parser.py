@@ -37,6 +37,16 @@ class PDFParser:
     MAX_METRIC_VALUES_PER_LINE = 3
     MAX_SINGLE_WORD_BANK_CODE_LENGTH = 4
     MAX_BANK_CODE_WORDS = 4
+    HIGHLIGHT_VALUE_PATTERN = r"%|\$|million|billion|basis"
+    NOISE_LINE_MARKERS = (
+        "©",
+        "all rights reserved",
+        "member nyse",
+        "confidential and proprietary",
+        "table of contents",
+        "financial strategies team",
+        "disclaimers & disclosures",
+    )
 
     SECTION_KEYWORDS = {
         "interest_rate_risk": [
@@ -267,7 +277,7 @@ class PDFParser:
                 continue
             if self._is_noise_line(line):
                 continue
-            if re.search(r"\d", line) and re.search(r"%|\$|million|billion|basis", line, re.IGNORECASE):
+            if re.search(r"\d", line) and re.search(self.HIGHLIGHT_VALUE_PATTERN, line, re.IGNORECASE):
                 highlights.append(line)
             if len(highlights) >= 12:
                 break
@@ -280,18 +290,7 @@ class PDFParser:
     @staticmethod
     def _is_noise_line(text: str) -> bool:
         lowered = text.lower()
-        return any(
-            marker in lowered
-            for marker in (
-                "©",
-                "all rights reserved",
-                "member nyse",
-                "confidential and proprietary",
-                "table of contents",
-                "financial strategies team",
-                "disclaimers & disclosures",
-            )
-        )
+        return any(marker in lowered for marker in PDFParser.NOISE_LINE_MARKERS)
 
     def _infer_bank_name(self, first_page_lines: list[str]) -> str:
         for line in first_page_lines[: self.PRIMARY_BANK_LINE_SCAN_LIMIT]:

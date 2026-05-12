@@ -19,6 +19,7 @@ class ReportGenerator:
     MAX_TABLE_COLUMNS = 5
     MAX_TABLE_ROWS = 6
     MAX_SECTION_PAGE_REFERENCES = 8
+    ACTION_ALERT_FLAGS = ("below", "decline", "loss", "risk", "breach")
 
     def __init__(self, parsed_data: dict[str, Any], output_dir: str | Path = "."):
         self.data = parsed_data
@@ -184,9 +185,7 @@ class ReportGenerator:
         for section in sections.values():
             for point in section.get("key_points", [])[:4]:
                 low = point.lower()
-                if self._is_actionable_point(low) and any(
-                    flag in low for flag in ("below", "decline", "loss", "risk", "breach")
-                ):
+                if self._is_actionable_point(low) and any(flag in low for flag in self.ACTION_ALERT_FLAGS):
                     cleaned = self._normalize_action(point)
                     if cleaned not in seen:
                         actions.append(cleaned)
