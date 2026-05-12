@@ -28,6 +28,9 @@ class PDFParser:
     UNKNOWN_REPORT_DATE = "Unknown Date"
     UNKNOWN_REPORT_PERIOD = "UnknownPeriod"
     TABULAR_TOKEN_RATIO_THRESHOLD = 0.45
+    MAX_BANK_NAME_LENGTH = 60
+    MIN_HIGHLIGHT_LENGTH = 35
+    MIN_KEY_POINT_LENGTH = 40
 
     SECTION_KEYWORDS = {
         "interest_rate_risk": [
@@ -254,7 +257,7 @@ class PDFParser:
 
         highlights: list[str] = []
         for line in lines:
-            if len(line) < 35:
+            if len(line) < self.MIN_HIGHLIGHT_LENGTH:
                 continue
             if self._is_noise_line(line):
                 continue
@@ -287,7 +290,7 @@ class PDFParser:
     def _infer_bank_name(self, first_page_lines: list[str]) -> str:
         for line in first_page_lines[:6]:
             lowered = line.lower()
-            if "bank" in lowered and "alco" not in lowered and len(line) <= 60:
+            if "bank" in lowered and "alco" not in lowered and len(line) <= self.MAX_BANK_NAME_LENGTH:
                 return line.title()
         for line in first_page_lines[:4]:
             if line and line.lower() != "alco":
@@ -326,7 +329,7 @@ class PDFParser:
         lines = [self._clean_text(line) for line in section_text.splitlines() if self._clean_text(line)]
         points: list[str] = []
         for line in lines:
-            if len(line) < 40:
+            if len(line) < self.MIN_KEY_POINT_LENGTH:
                 continue
             if self._is_noise_line(line):
                 continue

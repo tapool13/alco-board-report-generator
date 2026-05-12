@@ -13,6 +13,11 @@ class ReportGenerator:
     """Generate board-level Word reports from parsed ALCO data."""
 
     MAX_ACTION_LENGTH = 220
+    REPORT_PERIOD_LABEL = "For the Period Ended"
+    MAX_ANALYSIS_METRIC_ROWS = 8
+    MAX_BOARD_METRIC_ROWS = 6
+    MAX_TABLE_COLUMNS = 5
+    MAX_TABLE_ROWS = 6
 
     def __init__(self, parsed_data: dict[str, Any], output_dir: str | Path = "."):
         self.data = parsed_data
@@ -26,7 +31,7 @@ class ReportGenerator:
 
         doc.add_paragraph(metadata["bank_name"].upper())
         doc.add_paragraph("Board of Directors — Financial Summary Report")
-        doc.add_paragraph(f"For the Period Ended {metadata['report_date']}")
+        doc.add_paragraph(f"{self.REPORT_PERIOD_LABEL} {metadata['report_date']}")
 
         doc.add_heading("AT A GLANCE", level=1)
         highlights = self.data.get("document_highlights", [])[:5]
@@ -54,7 +59,7 @@ class ReportGenerator:
         doc.add_paragraph("BOARD OF DIRECTORS")
         doc.add_paragraph(metadata["bank_name"])
         doc.add_paragraph("ALCO Report Analysis")
-        doc.add_paragraph(f"For the Month Ending {metadata['report_date']}")
+        doc.add_paragraph(f"{self.REPORT_PERIOD_LABEL} {metadata['report_date']}")
 
         sections = [
             ("I.  Executive Summary", ["key_metrics_ratios", "regulatory_summaries"]),
@@ -76,7 +81,7 @@ class ReportGenerator:
                 doc.add_paragraph(narrative)
                 rows = self._collect_metric_rows(keys)
                 if rows:
-                    self._add_simple_table(doc, ["Metric", "Observed Value"], rows[:8])
+                    self._add_simple_table(doc, ["Metric", "Observed Value"], rows[: self.MAX_ANALYSIS_METRIC_ROWS])
 
             if "Interest Rate Risk" in title:
                 doc.add_heading("12-Month NIM Sensitivity", level=2)
@@ -110,7 +115,7 @@ class ReportGenerator:
 
         rows = self._collect_metric_rows(section_keys)
         if rows:
-            self._add_simple_table(doc, ["Metric", "Observed Value"], rows[:6])
+            self._add_simple_table(doc, ["Metric", "Observed Value"], rows[: self.MAX_BOARD_METRIC_ROWS])
             return
 
         table = self._first_table_for_sections(section_keys)
@@ -118,7 +123,11 @@ class ReportGenerator:
             headers = table["headers"]
             rows = table["rows"]
             if headers and rows:
-                self._add_simple_table(doc, headers[:5], [row[:5] for row in rows[:6]])
+                self._add_simple_table(
+                    doc,
+                    headers[: self.MAX_TABLE_COLUMNS],
+                    [row[: self.MAX_TABLE_COLUMNS] for row in rows[: self.MAX_TABLE_ROWS]],
+                )
 
     def _compose_section_summary(self, section_keys: list[str]) -> str:
         parts: list[str] = []
