@@ -258,9 +258,9 @@ class PDFParser:
 
     def _status_from_row(self, row: List[str]) -> str:
         text = " ".join(row).upper()
-        if " YES" in f" {text} ":
+        if re.search(r"\bYES\b", text):
             return "Green"
-        if " NO" in f" {text} " or "*" in text:
+        if re.search(r"\bNO\b", text) or "*" in text:
             return "Red"
         return "Yellow"
 
@@ -269,14 +269,20 @@ class PDFParser:
             return None
 
         actual_value = self._to_float(actual)
+        operator_match = re.search(r"(>=|<=|>|<)", policy)
         policy_value = self._to_float(policy)
         if actual_value is None or policy_value is None:
             return None
 
-        if ">" in policy:
+        operator = operator_match.group(1) if operator_match else None
+        if operator == ">=":
             return actual_value >= policy_value
-        if "<" in policy:
+        if operator == "<=":
             return actual_value <= policy_value
+        if operator == ">":
+            return actual_value > policy_value
+        if operator == "<":
+            return actual_value < policy_value
         return None
 
     def _to_float(self, value: str) -> Optional[float]:

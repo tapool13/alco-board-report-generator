@@ -65,8 +65,12 @@ def main() -> int:
     except FileNotFoundError as exc:
         print(f"Error: {exc}", file=sys.stderr)
         return 1
-    except Exception as exc:  # pylint: disable=broad-except
+    except (ValueError, OSError, RuntimeError) as exc:
         print(f"Error generating report: {exc}", file=sys.stderr)
+        return 1
+    except Exception as exc:
+        logging.exception("Unexpected error while generating report")
+        print(f"Unexpected error generating report: {exc}", file=sys.stderr)
         return 1
 
 

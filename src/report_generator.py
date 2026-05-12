@@ -9,7 +9,7 @@ from typing import Dict, Iterable, List
 from docx import Document
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 
-from config import SECTION_HEADERS
+from config import BALANCE_SHEET_FALLBACK_FIELDS, SECTION_HEADERS
 
 
 class ReportGenerator:
@@ -144,12 +144,7 @@ class ReportGenerator:
             return metrics
 
         fallback = []
-        for label, key in [
-            ("Total Assets", "total_assets"),
-            ("Loans", "loans"),
-            ("Deposits", "deposits"),
-            ("Capital", "capital"),
-        ]:
+        for label, key in BALANCE_SHEET_FALLBACK_FIELDS:
             value = balance_sheet.get(key)
             if value:
                 fallback.append({"metric": label, "value": value})

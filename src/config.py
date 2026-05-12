@@ -21,3 +21,10 @@ POLICY_LIMIT_DEFAULTS = {
     "EVE CHANGE +300": "> -35.00%",
     "NII CHANGE +300": "> -25.00%",
 }
+
+BALANCE_SHEET_FALLBACK_FIELDS = [
+    ("Total Assets", "total_assets"),
+    ("Loans", "loans"),
+    ("Deposits", "deposits"),
+    ("Capital", "capital"),
+]
