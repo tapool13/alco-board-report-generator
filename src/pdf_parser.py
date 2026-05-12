@@ -145,7 +145,7 @@ class PDFParser:
 
     def _extract_nim(self, pages: List[Dict]) -> Dict:
         full_text = "\n".join(page["text"] for page in pages)
-        nim_match = re.search(r"net interest margin[^\d]*(\d+\.\d+)%", full_text, re.IGNORECASE)
+        nim_match = re.search(r"net interest margin[^\d]*(\d+(?:\.\d+)?)%", full_text, re.IGNORECASE)
         nim_value = nim_match.group(1) + "%" if nim_match else ""
 
         rows = self._collect_rows_by_keywords(

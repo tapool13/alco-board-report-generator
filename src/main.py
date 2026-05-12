@@ -17,13 +17,13 @@ from pdf_parser import PDFParser
 from report_generator import ReportGenerator
 
 
-def _safe_name(value: str) -> str:
+def _sanitize_filename(value: str) -> str:
     return re.sub(r"[^A-Za-z0-9_-]+", "_", value.strip()).strip("_") or "Institution"
 
 
 def _build_default_output_path(input_path: Path, institution: str) -> Path:
     filename = DEFAULT_OUTPUT_FILENAME_TEMPLATE.format(
-        institution=_safe_name(institution),
+        institution=_sanitize_filename(institution),
         date=datetime.now().strftime("%Y%m%d"),
     )
     return input_path.parent / filename
@@ -54,7 +54,10 @@ def main() -> int:
         institution = args.institution or data.get("metadata", {}).get("institution", "Institution")
         data.setdefault("metadata", {})["institution"] = institution
 
-        output_path = Path(args.output).expanduser().resolve() if args.output else _build_default_output_path(input_path, institution)
+        if args.output:
+            output_path = Path(args.output).expanduser().resolve()
+        else:
+            output_path = _build_default_output_path(input_path, institution)
 
         print("[2/3] Generating Word report")
         generator = ReportGenerator(institution=institution)
